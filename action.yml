@@ -1,0 +1,33 @@
+# action.yml
+name: 'Arch Linux Builder Action'
+description: 'Build packages and more'
+inputs:
+  action:  # id of input
+    description: 'What to build. Valid options: build-package, build-repo, run-custom'
+    required: true
+    default: 'build-package'
+  target:
+    description: 'Target to build. For `build-package`, this is a directory containing a `PKGBUILD`, for `build-repo`, this is a directory containing package files, for `run-custom`, this is a path to a custom build script.'
+    required: true
+    default: '.'
+  artifacts:
+    description: 'Output artifacts are placed here. For `build-repo` this is the database name.'
+    required: true
+    default: 'output'
+  gpgsign:
+    description: 'GPG Key to use for signing packages or repository files'
+    required: false
+outputs:
+  artifacts: # id of output
+    description: 'Artifacts that were produced'
+runs:
+  using: 'docker'
+  image: 'Containerfile'
+  args:
+    - ${{ inputs.action }}
+    - ${{ inputs.target }}
+    - ${{ inputs.artifacts }}
+    - ${{ inputs.gpgsign }}
+branding:
+  icon: 'loader'
+  color: 'blue'
