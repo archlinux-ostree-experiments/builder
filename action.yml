@@ -22,7 +22,7 @@ outputs:
     description: 'Artifacts that were produced'
 runs:
   using: 'docker'
-  image: 'Containerfile'
+  image: 'docker://ghcr.io/archlinux-ostree-experiments/builder:main'
   args:
     - ${{ inputs.action }}
     - ${{ inputs.target }}
