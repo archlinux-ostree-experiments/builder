@@ -27,11 +27,11 @@ if [ ! "x${GPGSIGN:-}" = "x" ]; then
     if [ "x${KEYID}" = "x" ]; then
         create_user
         echo "GPG key specified. Importing..."
-        echo "$GPGSIGN" | sudo -u "$BUILDER_USER" gpg --import
+        echo "$GPGSIGN" | sudo -u "$BUILDER_USER" gpg --no-tty --import
 
         # "Trust gpg key via script": https://serverfault.com/questions/1010704/trust-gpg-key-via-script
-        KEYID=$(sudo -u "$BUILDER_USER" gpg --list-keys | grep -P "\s*[A-F0-9]{32,64}" | tr -d '[:blank:]')
-        echo -e "5\ny\n" | sudo -u "$BUILDER_USER" gpg --command-fd 0 --edit-key "$KEYID" trust
+        KEYID=$(sudo -u "$BUILDER_USER" gpg --no-tty --list-keys | grep -P "\s*[A-F0-9]{32,64}" | tr -d '[:blank:]')
+        echo -e "5\ny\n" | sudo -u "$BUILDER_USER" gpg --no-tty --command-fd 0 --edit-key "$KEYID" trust
 
         REPO_ADD_FLAGS="$REPO_ADD_FLAGS --sign --key $KEYID"
     fi

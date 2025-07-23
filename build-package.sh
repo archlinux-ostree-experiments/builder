@@ -42,7 +42,7 @@ add_keys() {
     KEYS=$(makepkg --printsrcinfo | grep -E '\s+validpgpkeys' | sed 's/\s\+validpgpkeys = //g' || true)
     if [ ! "z$KEYS" = "z" ]; then
         for key in $KEYS; do
-            gpg --recv-key "$key"
+            gpg --no-tty --recv-key "$key"
         done
     fi
 }
