@@ -37,7 +37,7 @@ install_deps() {
             INSTALL_PKG="$INSTALL_PKG $pkg"
         done
         sudo pacman -Sy
-        sudo pacman -S --noconfirm $INSTALL_PKG
+        [ -n "$INSTALL_PKG" ] && sudo pacman -S --noconfirm $INSTALL_PKG
     fi
 }
 
