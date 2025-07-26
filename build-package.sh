@@ -5,6 +5,9 @@ set -euxo pipefail
 TARGET="${1:-.}"
 ARTIFACTS="${2:-output}"
 GPGSIGN="${3:-}"
+INSTALL_DEPS="${4:-true}"
+INSTALL_BUILT_PKG="${5:-true}"
+PACKAGER="${6:-GitHub Actions Packager}"
 
 ROOT="$(pwd)"
 FULL_ARTIFACTS="$ROOT/$ARTIFACTS"
@@ -56,14 +59,15 @@ prepare_signing() {
 build_package() {
     PKG=${1:-$TARGET}
     cd "$PKG"
-    install_deps
+    [ "x$INSTALL_DEPS" = "xtrue" ] && install_deps
     add_keys
     cleanup
     prepare
     prepare_signing
     # The PKGBUILD of `grub` will call git log which opens a pager
     # We don't want to require interactivity, so we set `GIT_PAGER` to `cat`.
-    GIT_PAGER=cat makepkg $MAKEPKG_FLAGS
+    GIT_PAGER=cat PACKAGER="$PACKAGER" makepkg $MAKEPKG_FLAGS
+    [ "x$INSTALL_BUILT_PKG" = "xtrue" ] && sudo pacman -U --noconfirm *.pkg.tar.zst
     mv -v *.pkg.tar.* "$FULL_ARTIFACTS"
     cd "$ROOT"
 }

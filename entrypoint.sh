@@ -5,6 +5,9 @@ set -euxo pipefail
 ACTION="${1:-build-package}"
 TARGET="${2:-.}"
 ARTIFACTS="${3:-output}"
+INSTALL_DEPS="${4:-true}"
+INSTALL_PKG="${5:-true}"
+PACKAGER="${6:-GitHub Actions Packager}"
 
 ROOT="$(pwd)"
 FULL_ARTIFACTS="$ROOT/$ARTIFACTS"
@@ -20,7 +23,7 @@ create_user() {
 }
 
 set +x
-GPGSIGN="${4:-}"
+GPGSIGN="${7:-}"
 KEYID=""
 if [ ! "x${GPGSIGN:-}" = "x" ]; then
     # KEYID has not been set, so the key wasn't imported yet
@@ -61,13 +64,18 @@ if [ "x$ACTION" = "xbuild-package" ]; then
     chown -R "$BUILDER_USER" "$FULL_ARTIFACTS"
     for pkg in $TARGET; do
         chown -R "$BUILDER_USER" "$pkg"
-        sudo -u "$BUILDER_USER" build-package.sh "$pkg" "$ARTIFACTS" "$KEYID"
+        sudo -u "$BUILDER_USER" build-package.sh "$pkg" "$ARTIFACTS" "$KEYID" "$INSTALL_DEPS" "$INSTALL_PKG" "$PACKAGER"
     done
     exit 0
 fi
 
 if [ "x$ACTION" = "xbuild-repo" ]; then
     cd "$TARGET"
+    # Sanitize filenames. Otherwise, other systems might mess with them.
+    # For example, GH Releases will replace colons with periods, making the db reference invalid.
+    for file in *.pkg.tar.zst; do
+        mv "$file" $(echo "$file" | sed -e 's/[^A-Za-z0-9._-]/./g')
+    done
     sudo -u "$BUILDER_USER" repo-add $REPO_ADD_FLAGS "${ARTIFACTS}.db.tar.zst" *.pkg.tar.zst
     cd "$ROOT"
 
