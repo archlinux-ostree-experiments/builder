@@ -37,7 +37,9 @@ install_deps() {
             INSTALL_PKG="$INSTALL_PKG $pkg"
         done
         sudo pacman -Sy
-        sudo pacman -S --noconfirm $INSTALL_PKG
+        if [ -n "$INSTALL_PKG" ]; then
+            sudo pacman -S --noconfirm $INSTALL_PKG
+        fi
     fi
 }
 
@@ -59,7 +61,9 @@ prepare_signing() {
 build_package() {
     PKG=${1:-$TARGET}
     cd "$PKG"
-    [ "x$INSTALL_DEPS" = "xtrue" ] && install_deps
+    if [ "x$INSTALL_DEPS" = "xtrue" ]; then
+        install_deps
+    fi
     add_keys
     cleanup
     prepare
@@ -67,7 +71,9 @@ build_package() {
     # The PKGBUILD of `grub` will call git log which opens a pager
     # We don't want to require interactivity, so we set `GIT_PAGER` to `cat`.
     GIT_PAGER=cat PACKAGER="$PACKAGER" makepkg $MAKEPKG_FLAGS
-    [ "x$INSTALL_BUILT_PKG" = "xtrue" ] && sudo pacman -U --noconfirm *.pkg.tar.zst
+    if [ "x$INSTALL_BUILT_PKG" = "xtrue" ]; then
+        sudo pacman -U --noconfirm *.pkg.tar.zst
+    fi
     mv -v *.pkg.tar.* "$FULL_ARTIFACTS"
     cd "$ROOT"
 }
