@@ -96,7 +96,10 @@ if [ "x$ACTION" = "xbuild-repo" ]; then
     # Sanitize filenames. Otherwise, other systems might mess with them.
     # For example, GH Releases will replace colons with periods, making the db reference invalid.
     for file in *.pkg.tar.zst; do
-        mv "$file" $(echo "$file" | sed -e 's/[^A-Za-z0-9._-]/./g')
+        SANITIZED=$(echo "$file" | sed -e 's/[^A-Za-z0-9._-]/./g')
+        if [ "$file" != "$SANITIZED" ]; then
+            mv "$file" "$SANITIZED"
+        fi
     done
     sudo -u "$BUILDER_USER" repo-add $REPO_ADD_FLAGS "${ARTIFACTS}.db.tar.zst" *.pkg.tar.zst
     cd "$ROOT"
