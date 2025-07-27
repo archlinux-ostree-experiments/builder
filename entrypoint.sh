@@ -29,12 +29,27 @@ if [ ! "x${GPGSIGN:-}" = "x" ]; then
     # KEYID has not been set, so the key wasn't imported yet
     if [ "x${KEYID}" = "x" ]; then
         create_user
-        echo "GPG key specified. Importing..."
+        # Add key to the builder keyring, because it will be needed for signing
+        echo "GPG key specified. Importing (builder)..."
         echo "$GPGSIGN" | sudo -u "$BUILDER_USER" gpg --no-tty --import
 
-        # "Trust gpg key via script": https://serverfault.com/questions/1010704/trust-gpg-key-via-script
+
         KEYID=$(sudo -u "$BUILDER_USER" gpg --no-tty --list-keys | grep -P "\s*[A-F0-9]{32,64}" | tr -d '[:blank:]')
+        echo "Key ID is $KEYID"
+
+        # We need to import the public key explicitly to be able to trust it later
+        echo "GPG key imported. Export Public Key..."
+        sudo -u "$BUILDER_USER" gpg -a --export $KEYID > pubkey.asc
+
+        # "Trust gpg key via script": https://serverfault.com/questions/1010704/trust-gpg-key-via-script
+        echo "Setting trust level (builder keyring)..."
         echo -e "5\ny\n" | sudo -u "$BUILDER_USER" gpg --no-tty --command-fd 0 --edit-key "$KEYID" trust
+
+        # Add key to the pacman keyring, because it will be needed for verifying, if `install_packages` is `true`.
+        echo "Import Public Key (pacman keyring)..."
+        GNUPGHOME=/etc/pacman.d/gnupg gpg --import pubkey.asc
+        echo "Setting trust level (pacman keyring)..."
+        echo -e "5\ny\n" | GNUPGHOME=/etc/pacman.d/gnupg gpg --no-tty --command-fd 0 --edit-key "$KEYID" trust
 
         REPO_ADD_FLAGS="$REPO_ADD_FLAGS --sign --key $KEYID"
     fi
