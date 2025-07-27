@@ -46,8 +46,7 @@ runs:
     - ${{ inputs.install_package }}
     - ${{ inputs.packager }}
     - ${{ inputs.gpgsign }}
-  env:
-    SBSIGNKEY: ${{ inputs.sbsign }}
+    - ${{ inputs.sbsign }}
 branding:
   icon: 'loader'
   color: 'blue'

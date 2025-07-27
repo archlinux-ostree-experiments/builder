@@ -22,13 +22,15 @@ create_user() {
     chmod 0440 /etc/sudoers.d/99-allow-builder
 }
 
+create_user
+
 set +x
 GPGSIGN="${7:-}"
+SBSIGN="${8:-}"
 KEYID=""
 if [ ! "x${GPGSIGN:-}" = "x" ]; then
     # KEYID has not been set, so the key wasn't imported yet
     if [ "x${KEYID}" = "x" ]; then
-        create_user
         # Add key to the builder keyring, because it will be needed for signing
         echo "GPG key specified. Importing (builder)..."
         echo "$GPGSIGN" | sudo -u "$BUILDER_USER" gpg --no-tty --import
@@ -53,6 +55,11 @@ if [ ! "x${GPGSIGN:-}" = "x" ]; then
 
         REPO_ADD_FLAGS="$REPO_ADD_FLAGS --sign --key $KEYID"
     fi
+fi
+
+if [ ! "x${SBSIGN:-}" = "x" ]; then
+    echo "$SBSIGN" > MOK.key
+    chown "$BUILDER_USER" MOK.key
 fi
 set -x
 
