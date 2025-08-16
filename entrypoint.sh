@@ -65,7 +65,7 @@ if [ "x$ACTION" = "xbuild-aur" ]; then
     for pkg in $TARGET; do
         PACKAGES="$PACKAGES $pkg"
     done
-    PACKAGER="$PACKAGER" paru --noconfirm --skipreview --mflags "$MAKEPKG_FLAGS" -Sa $PACKAGES
+    GIT_PAGER=cat PACKAGER="$PACKAGER" paru --noconfirm --skipreview --mflags "$MAKEPKG_FLAGS" -Sa $PACKAGES
     find ~/.cache/paru/clone \( -name "*.pkg.tar.zst" -o -name "*.pkg.tar.zst.sig" \) -exec mv {} "$FULL_ARTIFACTS" \;
     exit 0
 fi
