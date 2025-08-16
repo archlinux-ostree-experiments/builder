@@ -21,10 +21,9 @@ inputs:
   gpgsign:
     description: 'GPG Key to use for signing packages or repository files'
     required: false
-outputs:
 runs:
   using: 'docker'
-  image: 'docker://ghcr.io/archlinux-ostree-experiments/builder:main'
+  image: 'docker://ghcr.io/archlinux-ostree-experiments/builder:latest'
   args:
     - ${{ inputs.action }}
     - ${{ inputs.target }}
