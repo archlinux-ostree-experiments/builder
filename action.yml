@@ -2,26 +2,18 @@
 name: 'Arch Linux Builder Action'
 description: 'Build packages and more'
 inputs:
-  action:  # id of input
-    description: 'What to build. Valid options: build-package, build-repo, run-custom'
+  action:
+    description: 'What to build. Valid options: build-package, build-repo, build-aur, run-custom'
     required: true
     default: 'build-package'
   target:
-    description: 'Target to build. For `build-package`, this is a directory containing a `PKGBUILD`, for `build-repo`, this is a directory containing package files, for `run-custom`, this is a path to a custom build script.'
+    description: 'Target to build. For `build-package`, this is a directory containing a `PKGBUILD`, for `build-aur` these are package names to be fetched from AUR, for `build-repo`, this is a directory containing package files, for `run-custom`, this is a path to a custom build script.'
     required: true
     default: '.'
   artifacts:
     description: 'Output artifacts are placed here. For `build-repo` this is the database name.'
     required: true
     default: 'output'
-  install_dependencies:
-    description: 'For build-package: Scan the PKGBUILD for dependencies and install them using pacman'
-    required: false
-    default: "false"
-  install_package:
-    description: 'For build-package: Install the package after building'
-    required: false
-    default: "false"
   packager:
     description: 'For build-package: Specify the packager name'
     required: false
@@ -29,12 +21,7 @@ inputs:
   gpgsign:
     description: 'GPG Key to use for signing packages or repository files'
     required: false
-  sbsign:
-    description: 'MOK key to provide, if any EFI binaries need to be signed'
-    required: false
 outputs:
-  artifacts: # id of output
-    description: 'Artifacts that were produced'
 runs:
   using: 'docker'
   image: 'docker://ghcr.io/archlinux-ostree-experiments/builder:main'
@@ -42,11 +29,8 @@ runs:
     - ${{ inputs.action }}
     - ${{ inputs.target }}
     - ${{ inputs.artifacts }}
-    - ${{ inputs.install_dependencies }}
-    - ${{ inputs.install_package }}
-    - ${{ inputs.packager }}
     - ${{ inputs.gpgsign }}
-    - ${{ inputs.sbsign }}
+    - ${{ inputs.packager }}
 branding:
   icon: 'loader'
   color: 'blue'

@@ -5,9 +5,9 @@ set -euxo pipefail
 TARGET="${1:-.}"
 ARTIFACTS="${2:-output}"
 GPGSIGN="${3:-}"
-INSTALL_DEPS="${4:-true}"
-INSTALL_BUILT_PKG="${5:-true}"
-PACKAGER="${6:-GitHub Actions Packager}"
+PACKAGER="${4:-GitHub Actions Packager}"
+INSTALL_DEPS="${5:-true}"
+INSTALL_BUILT_PKG="${6-true}"
 
 ROOT="$(pwd)"
 FULL_ARTIFACTS="$ROOT/$ARTIFACTS"
@@ -59,8 +59,7 @@ prepare_signing() {
 }
 
 build_package() {
-    PKG=${1:-$TARGET}
-    cd "$PKG"
+    cd "$TARGET"
     if [ "x$INSTALL_DEPS" = "xtrue" ]; then
         install_deps
     fi
