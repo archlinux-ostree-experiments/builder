@@ -16,6 +16,8 @@ REPO_ADD_FLAGS="-p"
 BUILDER_USER="builder"
 
 sudo chown -R "$BUILDER_USER" .
+sudo mkdir -p /github/home
+sudo chown -R "$BUILDER_USER" /github/home
 
 set +x
 GPGSIGN="${4:-}"
