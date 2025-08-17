@@ -19,10 +19,22 @@ sudo chown -R "$BUILDER_USER" .
 sudo mkdir -p /github/home
 sudo chown -R "$BUILDER_USER" /github/home
 
+remove_gpglocks() {
+    # Sometimes, previous uses seem to leave lock files, so we remove them
+    GNUPGDIR=$1
+
+    if [ -d "$GNUPGDIR" ]; then
+        sudo find "$GNUPGDIR" -name "*.lock" -exec rm -f {} \;
+    fi
+}
+
 set +x
 GPGSIGN="${4:-}"
 KEYID=""
 if [ ! "x${GPGSIGN:-}" = "x" ]; then
+    # In case we're operating in a stateful system like GH Actions, reset the GnuPG state and remove locks, if neccessary
+    rm -rf ~/.gnupg
+    remove_gpglocks /etc/pacman.d/gnupg
     # KEYID has not been set, so the key wasn't imported yet
     if [ "x${KEYID}" = "x" ]; then
         # Add key to the builder keyring, because it will be needed for signing
@@ -40,7 +52,9 @@ if [ ! "x${GPGSIGN:-}" = "x" ]; then
         echo "Setting trust level (builder keyring)..."
         echo -e "5\ny\n" | gpg --no-tty --command-fd 0 --edit-key "$KEYID" trust
 
-        sudo env GNUPGHOME=/etc/pacman.d/gnupg gpg --import pubkey.asc
+        # If the container is just restarted with an old state, this may fail, because the key is already known.
+        # If there was some other error, the following step will fail anyway.
+        sudo env GNUPGHOME=/etc/pacman.d/gnupg gpg --import pubkey.asc || true
         echo -e "5\ny\n" | sudo env GNUPGHOME=/etc/pacman.d/gnupg gpg --no-tty --command-fd 0 --edit-key "$KEYID" trust
 
         REPO_ADD_FLAGS="$REPO_ADD_FLAGS --sign --key $KEYID"
